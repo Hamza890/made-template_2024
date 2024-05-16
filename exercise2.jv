@@ -1,0 +1,123 @@
+pipeline treesPipeline {
+
+    treesExtractor -> treesTextFileInterpreter;
+
+    treesTextFileInterpreter
+        -> treesCSVInterpreter 
+    
+        //-> MpgColumnDeleter
+        -> treesTableInterpreter
+        -> treesLoader;
+
+
+ 
+    block treesExtractor oftype HttpExtractor {
+
+      
+        url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/stadt-neuss-herbstpflanzung-2023/exports/csv";
+    }
+
+  
+    block treesTextFileInterpreter oftype TextFileInterpreter { }
+
+    
+    block treesCSVInterpreter oftype CSVInterpreter {
+    delimiter: ";";
+    }
+
+
+   
+    // valuetype stadtteil oftype text {
+    //    constraints: [stadtteilrange];
+    // }
+    // constraint stadtteilrange oftype AllowlistConstraint{
+    //  allowlist:["furth-"];
+    // }
+    // valuetype idtype oftype decimal {
+    //    constraints: [geopoints];
+    // }
+    // constraint geopoints oftype RegexConstraint{
+    //  regex: /^(\d{1,3}\.\d+), (\d{1,3}\.\d+)$/;
+    // }
+    // block MpgColumnDeleter oftype ColumnDeleter {
+    //  delete: [column E];
+    // }
+    
+    //value == "Furth-";
+
+    block treesTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "lfd_nr" oftype integer,
+            "stadtteil" oftype FurthValues,
+            "standort" oftype text,
+            "baumart_botanisch" oftype text,
+            "id" oftype text,
+            "baumfamilie" oftype text
+
+        ];
+    }
+       valuetype FurthValues oftype text {
+    constraints: [
+        OnlyFurthValues 
+    ];
+} 
+ 
+constraint OnlyFurthValues on text:
+    value matches /^Furth-/;
+
+    // valuetype lfd_nr oftype decimal {
+    //    constraints: [];
+    // }
+    //  valuetype standor oftype text {
+    //    constraints: [];
+    // }
+    //  valuetype aumart_botanisch oftype text {
+    //    constraints: [];
+    // }
+    //  valuetype baumart_deutsch oftype text {
+    //    constraints: [];
+    // }
+    //  valuetype id oftype decimal {
+    //    constraints: [];
+    // }
+
+
+
+    block treesLoader oftype SQLiteLoader {
+        table: "trees";
+        file: "./trees.sqlite";
+    }
+
+     
+}
+                                                                        // pipeline TreesPipeline {
+
+                                                                            
+                                                                        //     TreesExtractor -> TreesTextFileInterpreter;
+
+                                                                        //     TreesTextFileInterpreter
+                                                                        //     -> TreesCSVInterpreter 
+                                                                        //     -> TreesTableInterpreter
+                                                                        //     -> TreesLoader;
+
+                                                                        //     block TreesExtractor oftype HttpExtractor {
+                                                                        //         url: "https://opendata.rhein-kreis-neuss.de/api/v2/catalog/datasets/stadt-neuss-herbstpflanzung-2023/exports/csv";
+                                                                        //     }
+
+                                                                        //     block TreesTextFileInterpreter oftype TextFileInterpreter { }
+
+                                                                        //     block TreesCSVInterpreter oftype CSVInterpreter {
+                                                                        //         delimiter: ";";
+                                                                        //     }
+
+                                                                        
+
+
+
+                                                                        //     block TreesLoader oftype SQLiteLoader {
+                                                                        //         table: "trees";
+                                                                        //         file: "./trees.sqlite";
+                                                                        //     }
+
+                                                                        // }

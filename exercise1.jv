@@ -1,0 +1,176 @@
+
+// // from a CSV file in the web 
+// // to a SQLite file sink.
+// pipeline AirpotsPipeline {
+
+
+
+// 	AirpotsExtractor -> AirpotsTextFileInterpreter;
+
+
+
+// 	AirpotsTextFileInterpreter
+// 		-> AirpotsCSVInterpreter 
+// 		-> NameHeaderWriter
+// 	   	-> airportsTableInterpreter
+// 		-> AirpotsLoader;
+
+
+
+// 	block AirpotsExtractor oftype HttpExtractor {
+
+
+// 		url: "https://opendata.rhein-kreis-neuss.de/api/explore/v2.1/catalog/datasets/rhein-kreis-neuss-flughafen-weltweit/exports/csv?lang=en&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
+// 	}
+
+
+// 	block AirpotsTextFileInterpreter oftype TextFileInterpreter { }
+
+
+// 	block AirpotsCSVInterpreter oftype CSVInterpreter {
+// 		 delimiter: ";";
+
+// 	}
+
+
+// 	// block HeaderSequenceWriter oftype CellWriter {
+
+// 	// 	at: range A1 : M1;
+   
+        
+
+// 	// 	write:["Lfd. Nummer","Name des Flughafens" ,"Ort","Land", "IATA","ICAO","Latitude", "Longitude","Altitude","Zeitzone","DST","Zeitzonen-Datenbank","geo_punkt"];
+        
+// 	// }
+//      block NameHeaderWriter oftype CellWriter {
+//         // 12. We utilize a syntax similar to spreadsheet programs.
+//         // Cell ranges can be described using the keywords "cell", "row", "column", or "range" that indicate which 
+//         // cells are selected for the write action.
+//         at: range A1:M1;
+
+//         // 13. For each cell we selected with the "at" property above,
+//         // we can specify what value shall be written into the cell.
+//         write: ["Lfd. Nummer","Name des Flughafens","Ort","Land","IATA","ICAO","Latitude","Longitude","Altitude","Zeitzone","DST","Zeitzonen-Datenbank","geo_punkt"];
+//     }
+//     // block MultiCellWriter oftype CellWriter {
+//     //     at: cell A1, cell B1, cell C1;
+//     //     write: ["Name", "Age", "Location"];
+//     // }
+//     // block HeaderSequenceWriter oftype CellWriter {
+//     //     at: range A1:A2;
+//     //     write: ["Name", "Age"];
+//     // }
+
+// 	// 14. As a next step, we interpret the sheet as a table by adding structure.
+// 	// We define a valuetype per column that specifies the data type of the column.
+// 	// Rows that include values that are not valid according to the their valuetypes are dropped automatically. 
+//     // block AirpotsTableInterpreter oftype TableInterpreter {
+//     //     header: true;
+//     //     columns: [
+//     //         "Lfd. Nummer" oftype integer,
+//     //         "Name des Flughafens" oftype text,
+//     //         "Ort" oftype text,
+//     //         "Land" oftype text,
+//     //         "IATA" oftype text,
+//     //         "ICAO" oftype text,
+//     //         "Latitude" oftype decimal,
+//     //         "Longitude" oftype decimal,
+//     //         "Altitude" oftype integer,
+//     //         "Zeitzone" oftype integer,
+//     //         "DST" oftype text,
+//     //         "Zeitzonen-Datenbank" oftype text,
+//     //         "geo_punkt" oftype text,
+//     //     ];
+//     // }
+
+//     block airportsTableInterpreter oftype TableInterpreter {
+//         header: true;
+//         columns: [
+//             "Lfd. Nummer" oftype integer,
+//             "Name des Flughafens" oftype text,
+//             "Ort" oftype text,
+//             "Land" oftype text,
+//             "IATA" oftype text,
+//             "ICAO" oftype text,
+//             "Latitude" oftype decimal,
+//             "Longitude" oftype decimal,
+//             "Altitude" oftype integer,
+//             "Zeitzone" oftype decimal,
+//             "DST" oftype text,
+//             "Zeitzonen-Datenbank" oftype text,
+//             "geo_punkt" oftype text,
+//         ];
+//     }
+
+
+// 	block AirpotsLoader oftype SQLiteLoader {
+// 		table: "airpots";
+// 		file: "./airpots.sqlite";
+// 	}
+
+ 
+// }
+
+pipeline airportsPipeline {
+
+    airportsExtractor -> airportsTextFileInterpreter;
+
+    airportsTextFileInterpreter
+        -> airportsCSVInterpreter 
+        -> NameHeaderWriter
+        -> airportsTableInterpreter
+        -> airportsLoader;
+
+
+ 
+    block airportsExtractor oftype HttpExtractor {
+
+      
+        url: "https://opendata.rhein-kreis-neuss.de/api/explore/v2.1/catalog/datasets/rhein-kreis-neuss-flughafen-weltweit/exports/csv?lang=en&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
+    }
+
+  
+    block airportsTextFileInterpreter oftype TextFileInterpreter { }
+
+    
+    block airportsCSVInterpreter oftype CSVInterpreter {
+    delimiter: ";";
+    }
+
+
+    block NameHeaderWriter oftype CellWriter {
+       
+        at: range A1:M1;
+
+  
+        write: ["Lfd. Nummer","Name des Flughafens","Ort","Land","IATA","ICAO","Latitude","Longitude","Altitude","Zeitzone","DST","Zeitzonen-Datenbank","geo_punkt"];
+    }
+
+
+    block airportsTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "Lfd. Nummer" oftype integer,
+            "Name des Flughafens" oftype text,
+            "Ort" oftype text,
+            "Land" oftype text,
+            "IATA" oftype text,
+            "ICAO" oftype text,
+            "Latitude" oftype decimal,
+            "Longitude" oftype decimal,
+            "Altitude" oftype integer,
+            "Zeitzone" oftype decimal,
+            "DST" oftype text,
+            "Zeitzonen-Datenbank" oftype text,
+            "geo_punkt" oftype text,
+        ];
+    }
+
+
+    block airportsLoader oftype SQLiteLoader {
+        table: "airports";
+        file: "./airports.sqlite";
+    }
+
+     
+}
